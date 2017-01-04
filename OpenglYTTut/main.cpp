@@ -1,7 +1,12 @@
 #include <iostream>
+#include <vector>
 #include <SDL2\SDL.h>
+#include <SOIL.h>
 #undef main
 #include <GL\glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 int main() {
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -14,7 +19,7 @@ int main() {
 
 	SDL_Window *m_window = SDL_CreateWindow("window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 200, 200, SDL_WINDOW_OPENGL);
 	SDL_GLContext m_GLcontext = SDL_GL_CreateContext(m_window);
-	
+
 	SDL_Event e;
 	bool is_Close = false;
 	//OPENGL PART
@@ -23,38 +28,11 @@ int main() {
 		printf("glew doesn't work");
 		return -1;
 	}
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-	static const GLfloat g_vertex_buffer_data[] = {
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, .0f,
-	};
-
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-	
-	glClearColor(1.0f, 0.5f, 0.3f, 1.0f);
 	
 	while (!is_Close) {
 		SDL_GL_SwapWindow(m_window);
-
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(
-			0,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			(void*)0
-		);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDisableVertexAttribArray(0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 18);
 		while (SDL_PollEvent(&e)) {
 			if (e.type == SDL_QUIT)
 				is_Close = true;
