@@ -1,3 +1,6 @@
-﻿  main.cpp
-  OpenglYTTut.vcxproj -> C:\Users\saniola\Documents\Visual Studio 2015\Projects\OpenglYTTut - Copy\OpenglYTTut - Copy\Debug\OpenglYTTut.exe
-  OpenglYTTut.vcxproj -> C:\Users\saniola\Documents\Visual Studio 2015\Projects\OpenglYTTut - Copy\OpenglYTTut - Copy\Debug\OpenglYTTut.pdb (Partial PDB)
+﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (OpenglYTTut.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Ogl.cpp
+c:\users\saniola\documents\visual studio 2015\projects\openglyttut - copy\openglyttut - copy\openglyttut\ogl.cpp(144): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+c:\users\saniola\documents\visual studio 2015\projects\openglyttut - copy\openglyttut - copy\openglyttut\ogl.cpp(107): warning C4101: 'indexBuffer': unreferenced local variable
+  OpenglYTTut.vcxproj -> C:\Users\saniola\Documents\Visual Studio 2015\Projects\OpenglYTTut - Copy\OpenglYTTut - Copy\Debug\LoadingModelProject.exe
+  OpenglYTTut.vcxproj -> C:\Users\saniola\Documents\Visual Studio 2015\Projects\OpenglYTTut - Copy\OpenglYTTut - Copy\Debug\LoadingModelProject.pdb (Partial PDB)

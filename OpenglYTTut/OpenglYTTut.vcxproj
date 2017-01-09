@@ -22,6 +22,7 @@
     <ProjectGuid>{006FAD89-DB7D-4479-8369-768544361F70}</ProjectGuid>
     <RootNamespace>OpenglYTTut</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>LoadingModelProject</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -117,6 +118,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Ogl.cpp" />
+    <ClCompile Include="Shaders.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Ogl.h" />
+    <ClInclude Include="Shaders.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
