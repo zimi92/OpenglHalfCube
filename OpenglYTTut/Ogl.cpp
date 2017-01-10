@@ -1,7 +1,9 @@
 #include "Ogl.h"
-
+#include <sstream>
 Ogl::Ogl()
 {
+	frameCount = 0;
+	previousTime = std::chrono::high_resolution_clock::now();
 }
 
 
@@ -26,30 +28,82 @@ void Ogl::viewBasic() {
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	static const GLfloat g_color_buffer_data[] = {
-		1.0f, 1.0f, 0.0f,
-		1.0f
-	};
-	struct vec2 {
-		vec2(float _r = 1, float _g = 1) :r(_r), g(_g) {}
-		float r, g;
-	};
-	struct vec3 {
-		vec3(float _r = 1, float _g = 1, float _b = 1) :r(_r), g(_g), b(_b) {}
-		float r, g, b;
-	};
-	struct vec4 {
-		vec4(float _r = 1, float _g = 1, float _b = 1, float _a = 1) :r(_r), g(_g), b(_b), a(_a) {}
-		float r, g, b, a;
-	};
-	struct Vertex {
-		vec3 position;
-		vec4 color;
-		vec2 texture;
-		vec3 normal;
-	};
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
 
-	std::vector<Vertex> triangle;
+	loadModel();
+
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, numbers.size() * sizeof(Vertex), &numbers[0], GL_STATIC_DRAW);
+
+	GLuint indexBuffer;
+
+	int width, height;
+	unsigned char* image = SOIL_load_image("tex1.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(image);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//transformations
+
+	GLuint transfID = glGetUniformLocation(ProgramID, "transform");
+	GLuint lightPosID = glGetUniformLocation(ProgramID, "lightPos");
+	GLuint modelID = glGetUniformLocation(ProgramID, "modelID");
+	glm::mat4 projectionMatrix = glm::perspective(120.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+	glm::mat4 View = glm::lookAt(
+		glm::vec3(-3.0f, 3.0f, 4.0f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(0, 1, 0)
+	);
+	glm::vec3 lightPos = glm::vec3(1.0f, 3.0f, 4.0f);
+	float temp;
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(PositionID, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(ColorID, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(temp)));//(sizeof(vec3)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(7 * sizeof(temp)));//(sizeof(vec3) + sizeof(vec4)));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(normalID, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(9 * sizeof(temp)));//(sizeof(vec3) + sizeof(vec4) + sizeof(vec2)));
+	glBindVertexArray(VertexArrayID);
+
+	glBindTexture(GL_TEXTURE_2D, texture);
+	GLfloat rotation = 0.1;
+	glm::mat4 transform;
+	glUniformMatrix4fv(transfID, 1, GL_FALSE, glm::value_ptr(projectionMatrix * View));
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, glm::value_ptr(transform));
+	glUniform3f(lightPosID, lightPos.r, lightPos.g, lightPos.b);// glm::value_ptr(lightPos));
+
+	glClearColor(0.1f, 0.0f, 0.0f, 1.0f);
+}
+
+void Ogl::loadModel() {
+	std::string line;
+	std::cout << "start" << std::endl;
+	std::ifstream myStream("model2.txt");
+	if (myStream.is_open()) {
+		while (std::getline(myStream, line)) {
+			std::istringstream iss(line);
+			std::string token;
+			while (std::getline(iss, token, ','))
+			{
+				numbers.push_back(atof(token.c_str()));
+			}
+			std::cout << std::endl;
+		}
+		myStream.close();
+		return;
+	}
+
 	//front1
 	Vertex v0 = { vec3(-1.0f, -1.0f, 1.0f),vec4(1.0f, 0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f) };
 	Vertex v1 = { vec3(-1.0f, 1.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f) };
@@ -93,59 +147,22 @@ void Ogl::viewBasic() {
 	triangle.push_back(v15);
 	triangle.push_back(v16);
 	triangle.push_back(v17);
+}
 
-	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS);
-
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, triangle.size() * sizeof(Vertex), &triangle[0], GL_STATIC_DRAW);
-
-	GLuint indexBuffer;
-
-	int width, height;
-	unsigned char* image = SOIL_load_image("tex1.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	//transformations
-
-	GLuint transfID = glGetUniformLocation(ProgramID, "transform");
-	GLuint lightPosID = glGetUniformLocation(ProgramID, "lightPos");
-	GLuint modelID = glGetUniformLocation(ProgramID, "modelID");
-	glm::mat4 projectionMatrix = glm::perspective(120.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-	glm::mat4 View = glm::lookAt(
-		glm::vec3(-3.0f, 3.0f, 4.0f),
-		glm::vec3(0, 0, 0),
-		glm::vec3(0, 1, 0)
-	);
-	glm::vec3 lightPos = glm::vec3(1.0f, 3.0f, 4.0f);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(PositionID, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(ColorID, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec3)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec3) + sizeof(vec4)));
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(normalID, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec3) + sizeof(vec4) + sizeof(vec2)));
-	glBindVertexArray(VertexArrayID);
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-	GLfloat rotation = 0.1;
-	glm::mat4 transform;
-	glUniformMatrix4fv(transfID, 1, GL_FALSE, glm::value_ptr(projectionMatrix * View));
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, glm::value_ptr(transform));
-	glUniform3f(lightPosID, lightPos.r, lightPos.g, lightPos.b);// glm::value_ptr(lightPos));
-
-	glClearColor(0.1f, 0.0f, 0.0f, 1.0f);
+GLuint Ogl::fpsCounter() {
+	GLfloat fps = 0;
+	frameCount++;
+	currentTime = std::chrono::high_resolution_clock::now();//std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+	std::chrono::milliseconds deltatime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);//std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);
+	/*std::cout << std::chrono::duration_cast<std::chrono::milliseconds> (currentTime).count() << 
+		" " << std::chrono::duration_cast<std::chrono::milliseconds> (previousTime).count() 
+		<<" " << frameCount << " " << deltatime.count()<< std::endl;
+		*/
+	if (deltatime.count() > 1000.0f) {
+		fps = (float)frameCount / (deltatime.count() / 1000.0f);
+		std::cout << fps << std::endl;
+		previousTime = currentTime;
+		frameCount = 0;
+	}
+	return (GLuint)fps;
 }

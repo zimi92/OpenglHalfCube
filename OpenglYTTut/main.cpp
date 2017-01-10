@@ -27,12 +27,13 @@ int main() {
 	
 	SDL_Event e;
 	bool is_Close = false;
-	
 	float rotation = 0;
 	while (!is_Close) {
 		SDL_GL_SwapWindow(m_window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_TRIANGLES, 0, 18);
+//		std::cout << oglMain.fpsCounter() << std::endl;
+		oglMain.fpsCounter();
 		while (SDL_PollEvent(&e)) {
 			if (e.type == SDL_QUIT)
 				is_Close = true;
