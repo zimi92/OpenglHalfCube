@@ -34,14 +34,21 @@ class Ogl: public Shaders
 	GLuint frameCount;
 	std::chrono::steady_clock::time_point  currentTime;
 	std::chrono::steady_clock::time_point previousTime;
+	glm::vec3 lightPos;
+	float rotation;
+	GLuint lightPosID;
+	GLuint ProgramID;
+	glm::mat4 transform;
 public:
 	//glm::vec3 lightPos;
 	//GLuint lightPosID;
 	Ogl();
 	~Ogl();
 	void viewBasic();
-	void draw();
+	void draw(int vertices);
 	void loadModel();
 	GLuint fpsCounter();
+	void rotateLight(float speedOfLight);
+	void rotateModel(int axis, float angle);
 };
 

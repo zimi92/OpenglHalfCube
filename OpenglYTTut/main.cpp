@@ -28,23 +28,45 @@ int main() {
 	SDL_Event e;
 	bool is_Close = false;
 	float rotation = 0;
+	float lightSpeed = 0.01;
+	float rotateSpeed = 0.01;
+	int rotateDirection = 0;
 	while (!is_Close) {
 		SDL_GL_SwapWindow(m_window);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 0, 18);
-//		std::cout << oglMain.fpsCounter() << std::endl;
+		oglMain.draw(18);
 		oglMain.fpsCounter();
+		oglMain.rotateLight(lightSpeed);
+		oglMain.rotateModel(rotateDirection, rotateSpeed);
+
 		while (SDL_PollEvent(&e)) {
 			if (e.type == SDL_QUIT)
 				is_Close = true;
-			/*if (e.type == SDL_KEYDOWN) {
-				//glm::mat4 transform;
-				//transform = glm::rotate(transform, rotation+=0.1f, glm::vec3(0.0, 1.0, 0.0));
-				//glUniformMatrix4fv(modelID, 1, GL_FALSE, glm::value_ptr(transform));
-				oglMain.lightPos = glm::vec3(4 * glm::sin(rotation += 0.1), 3.0f, 4 * glm::cos(rotation += 0.1));
-				glUniform3f(oglMain.lightPosID, oglMain.lightPos.r, oglMain.lightPos.g, oglMain.lightPos.b);
-				//std::cout << lightPos.x << " " << lightPos.x << " " << lightPos.x << std::endl;
-			}*/
+			if (e.type == SDL_KEYDOWN) {
+				switch (e.key.keysym.sym) {
+				case SDLK_a: {
+					lightSpeed += 0.01;
+					break;
+				}
+				case SDLK_d: {
+					lightSpeed -= 0.01;
+					break;
+				}
+				case SDLK_i: {
+					rotateDirection = 1;
+					break;
+				}
+				case SDLK_j: {
+					rotateDirection = 2;
+					break;
+				}
+				case SDLK_y: {
+					rotateDirection = 0;
+					break;
+				}
+				default:
+					break;
+				}
+			}			
 		}
 	}
 	SDL_GL_DeleteContext(m_GLcontext);

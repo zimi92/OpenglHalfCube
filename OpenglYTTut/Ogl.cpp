@@ -3,6 +3,7 @@
 Ogl::Ogl()
 {
 	frameCount = 0;
+	rotation = 0;
 	previousTime = std::chrono::high_resolution_clock::now();
 }
 
@@ -12,7 +13,7 @@ Ogl::~Ogl()
 }
 
 void Ogl::viewBasic() {
-	GLuint ProgramID = Shaders::getProgramID();
+	ProgramID = Shaders::getProgramID();
 	GLuint PositionID;
 	GLuint ColorID;
 	GLuint texCoord;
@@ -21,9 +22,6 @@ void Ogl::viewBasic() {
 	ColorID = glGetAttribLocation(ProgramID, "colorDst");
 	texCoord = glGetAttribLocation(ProgramID, "texCoord");
 	normalID = glGetAttribLocation(ProgramID, "normal");
-	std::cout << ColorID << std::endl;
-	std::cout << PositionID << std::endl;
-	std::cout << ProgramID << std::endl;
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
@@ -38,7 +36,10 @@ void Ogl::viewBasic() {
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, numbers.size() * sizeof(Vertex), &numbers[0], GL_STATIC_DRAW);
+	if(!numbers.empty())
+		glBufferData(GL_ARRAY_BUFFER, numbers.size() * sizeof(Vertex), &numbers[0], GL_STATIC_DRAW);
+	else
+		glBufferData(GL_ARRAY_BUFFER, triangle.size() * sizeof(Vertex), &triangle[0], GL_STATIC_DRAW);
 
 	GLuint indexBuffer;
 
@@ -55,7 +56,7 @@ void Ogl::viewBasic() {
 	//transformations
 
 	GLuint transfID = glGetUniformLocation(ProgramID, "transform");
-	GLuint lightPosID = glGetUniformLocation(ProgramID, "lightPos");
+	lightPosID = glGetUniformLocation(ProgramID, "lightPos");
 	GLuint modelID = glGetUniformLocation(ProgramID, "modelID");
 	glm::mat4 projectionMatrix = glm::perspective(120.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 	glm::mat4 View = glm::lookAt(
@@ -63,7 +64,7 @@ void Ogl::viewBasic() {
 		glm::vec3(0, 0, 0),
 		glm::vec3(0, 1, 0)
 	);
-	glm::vec3 lightPos = glm::vec3(1.0f, 3.0f, 4.0f);
+	lightPos = glm::vec3(1.0f, 3.0f, 4.0f);
 	float temp;
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glEnableVertexAttribArray(0);
@@ -77,8 +78,7 @@ void Ogl::viewBasic() {
 	glBindVertexArray(VertexArrayID);
 
 	glBindTexture(GL_TEXTURE_2D, texture);
-	GLfloat rotation = 0.1;
-	glm::mat4 transform;
+	transform = glm::rotate(transform, 25.0f, glm::vec3(0.0, 1.0f, 0.0f));
 	glUniformMatrix4fv(transfID, 1, GL_FALSE, glm::value_ptr(projectionMatrix * View));
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, glm::value_ptr(transform));
 	glUniform3f(lightPosID, lightPos.r, lightPos.g, lightPos.b);// glm::value_ptr(lightPos));
@@ -98,7 +98,6 @@ void Ogl::loadModel() {
 			{
 				numbers.push_back(atof(token.c_str()));
 			}
-			std::cout << std::endl;
 		}
 		myStream.close();
 		return;
@@ -152,12 +151,8 @@ void Ogl::loadModel() {
 GLuint Ogl::fpsCounter() {
 	GLfloat fps = 0;
 	frameCount++;
-	currentTime = std::chrono::high_resolution_clock::now();//std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-	std::chrono::milliseconds deltatime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);//std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);
-	/*std::cout << std::chrono::duration_cast<std::chrono::milliseconds> (currentTime).count() << 
-		" " << std::chrono::duration_cast<std::chrono::milliseconds> (previousTime).count() 
-		<<" " << frameCount << " " << deltatime.count()<< std::endl;
-		*/
+	currentTime = std::chrono::high_resolution_clock::now();
+	std::chrono::milliseconds deltatime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);
 	if (deltatime.count() > 1000.0f) {
 		fps = (float)frameCount / (deltatime.count() / 1000.0f);
 		std::cout << fps << std::endl;
@@ -165,4 +160,36 @@ GLuint Ogl::fpsCounter() {
 		frameCount = 0;
 	}
 	return (GLuint)fps;
+}
+
+void Ogl::draw(int vertices) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_TRIANGLES, 0, vertices);
+}
+
+void Ogl::rotateLight(float speedOfLight) {
+	std::chrono::milliseconds deltatime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);
+	if (deltatime.count() % 100 == 0) {
+		lightPos = glm::vec3(4 * glm::sin(rotation += speedOfLight), 3.0f, 4 * glm::cos(rotation += speedOfLight));
+		glUniform3f(lightPosID, lightPos.r, lightPos.g, lightPos.b);
+	}
+}
+
+void Ogl::rotateModel(int axis, float angle) {
+	GLuint modelID = glGetUniformLocation(ProgramID, "modelID");
+	std::chrono::milliseconds deltatime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);
+	if (deltatime.count() % 100 == 0) {
+		switch (axis)
+		{
+		case 0:
+			transform = glm::rotate(transform, angle, glm::vec3(1.0, 0.0f, 0.0f));
+		case 1:
+			transform = glm::rotate(transform, angle, glm::vec3(0.0, 1.0f, 0.0f));
+		case 2:
+			transform = glm::rotate(transform, angle, glm::vec3(0.0, 0.0f, 1.0f));
+		default:
+			break;
+		}
+	}
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, glm::value_ptr(transform));
 }

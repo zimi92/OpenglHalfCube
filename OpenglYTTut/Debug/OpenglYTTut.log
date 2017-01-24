@@ -1,4 +1,8 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (OpenglYTTut.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   main.cpp
+c:\users\saniola\documents\visual studio 2015\projects\openglyttut - copy\openglyttut - copy\openglyttut\main.cpp(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\saniola\documents\visual studio 2015\projects\openglyttut - copy\openglyttut - copy\openglyttut\main.cpp(32): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\saniola\documents\visual studio 2015\projects\openglyttut - copy\openglyttut - copy\openglyttut\main.cpp(47): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\saniola\documents\visual studio 2015\projects\openglyttut - copy\openglyttut - copy\openglyttut\main.cpp(51): warning C4305: '-=': truncation from 'double' to 'float'
   OpenglYTTut.vcxproj -> C:\Users\saniola\Documents\Visual Studio 2015\Projects\OpenglYTTut - Copy\OpenglYTTut - Copy\Debug\LoadingModelProject.exe
   OpenglYTTut.vcxproj -> C:\Users\saniola\Documents\Visual Studio 2015\Projects\OpenglYTTut - Copy\OpenglYTTut - Copy\Debug\LoadingModelProject.pdb (Partial PDB)
